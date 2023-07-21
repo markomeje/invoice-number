@@ -1,0 +1,29 @@
+{
+  "name": "markomeje/invoice-number",
+  "description": "Invoice number generator",
+  "type": "library",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Markomeje\\InvoiceNumber\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "markomeje",
+      "email": "markomejeonline@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^8.2",
+    "hashids/hashids": "^5.0"
+  },
+  "config": {
+    "allow-plugins": {
+      "pestphp/pest-plugin": true
+    }
+  },
+  "require-dev": {
+    "pestphp/pest": "^2.9"
+  }
+}
