@@ -18,5 +18,5 @@ it('returns two characters', function(string $value): void {
 
 it('throws an exception if the string is not long enough', function(): void {
   $object = new StringValueLibrary('');
-  $string = $object->initials();
+  $object->initials();
 })->throws(InvalidArgumentException::class);
