@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'markomeje/invoice-number',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => NULL,
+        'pretty_version' => 'dev-master',
+        'version' => 'dev-master',
+        'reference' => '694edfb93b399713cd308f2b7ca7e45df8238304',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -65,9 +65,9 @@
             'dev_requirement' => true,
         ),
         'markomeje/invoice-number' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => NULL,
+            'pretty_version' => 'dev-master',
+            'version' => 'dev-master',
+            'reference' => '694edfb93b399713cd308f2b7ca7e45df8238304',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
