@@ -28,7 +28,8 @@
     "pestphp/pest": "^2.9",
     "phpunit/php-code-coverage": "^10.1",
     "phpstan/phpstan": "^1.11",
-    "laravel/pint": "^1.17"
+    "laravel/pint": "^1.17",
+    "orchestra/testbench": "*"
   },
   "scripts": {
     "pint": [
