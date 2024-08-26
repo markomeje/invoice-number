@@ -28,7 +28,7 @@ jobs:
           coverage: none
 
       - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist
+        run: composer update --no-interaction --prefer-dist
 
       - name: Execute tests
         run: composer test
@@ -56,7 +56,7 @@ jobs:
           ini-values: memory_limit=512M
 
       - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist
+        run: composer update --no-interaction --prefer-dist
 
       - name: Execute tests
         run: composer test

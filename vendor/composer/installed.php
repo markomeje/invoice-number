@@ -3,7 +3,7 @@
         'name' => 'markomeje/invoice-number',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'e48e58b02bde22c75068837f778f4f1170888b9d',
+        'reference' => '0762d34eb89fab35e8c368245b8c74e0c1ca4a3b',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -517,7 +517,7 @@
         'markomeje/invoice-number' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'e48e58b02bde22c75068837f778f4f1170888b9d',
+            'reference' => '0762d34eb89fab35e8c368245b8c74e0c1ca4a3b',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -853,8 +853,8 @@
         'psr/container-implementation' => array(
             'dev_requirement' => true,
             'provided' => array(
-                0 => '^1.0',
-                1 => '1.1|2.0',
+                0 => '1.1|2.0',
+                1 => '^1.0',
             ),
         ),
         'psr/event-dispatcher' => array(
