@@ -4,6 +4,16 @@ declare(strict_types=1);
 
 namespace Pest\Plugins\Parallel\Paratest;
 
+use ParaTest\Options;
+use Pest\Plugins\Parallel\Support\CompactPrinter;
+use Pest\Support\StateGenerator;
+use PHPUnit\TestRunner\TestResult\TestResult;
+use PHPUnit\TextUI\Output\Printer;
+use SebastianBergmann\Timer\Duration;
+use SplFileInfo;
+use Symfony\Component\Console\Formatter\OutputFormatter;
+use Symfony\Component\Console\Output\OutputInterface;
+
 use function assert;
 use function fclose;
 use function feof;
@@ -12,16 +22,7 @@ use function fread;
 use function fseek;
 use function ftell;
 use function fwrite;
-use ParaTest\Options;
-use Pest\Plugins\Parallel\Support\CompactPrinter;
-use Pest\Support\StateGenerator;
-use PHPUnit\TestRunner\TestResult\TestResult;
-use PHPUnit\TextUI\Output\Printer;
-use SebastianBergmann\Timer\Duration;
-use SplFileInfo;
 use function strlen;
-use Symfony\Component\Console\Formatter\OutputFormatter;
-use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * @internal
@@ -62,8 +63,7 @@ final class ResultPrinter
         {
             public function __construct(
                 private readonly OutputInterface $output,
-            ) {
-            }
+            ) {}
 
             public function print(string $buffer): void
             {
@@ -78,9 +78,7 @@ final class ResultPrinter
                 $this->output->write(OutputFormatter::escape($buffer));
             }
 
-            public function flush(): void
-            {
-            }
+            public function flush(): void {}
         };
 
         $this->compactPrinter = CompactPrinter::default();
@@ -171,7 +169,7 @@ final class ResultPrinter
             return;
         }
 
-        $state = (new StateGenerator())->fromPhpUnitTestResult($this->passedTests, $testResult);
+        $state = (new StateGenerator)->fromPhpUnitTestResult($this->passedTests, $testResult);
 
         $this->compactPrinter->errors($state);
         $this->compactPrinter->recap($state, $testResult, $duration, $this->options);

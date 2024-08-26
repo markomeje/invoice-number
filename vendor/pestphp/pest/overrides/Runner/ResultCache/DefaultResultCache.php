@@ -45,22 +45,23 @@ declare(strict_types=1);
 
 namespace PHPUnit\Runner\ResultCache;
 
+use const DIRECTORY_SEPARATOR;
+
+use PHPUnit\Framework\TestStatus\TestStatus;
+use PHPUnit\Runner\DirectoryCannotBeCreatedException;
+use PHPUnit\Runner\Exception;
+use PHPUnit\Util\Filesystem;
+
 use function array_keys;
 use function assert;
-use const DIRECTORY_SEPARATOR;
 use function dirname;
 use function file_get_contents;
 use function file_put_contents;
 use function is_array;
 use function is_dir;
-use function is_file;
 use function json_decode;
 use function json_encode;
 use function Pest\version;
-use PHPUnit\Framework\TestStatus\TestStatus;
-use PHPUnit\Runner\DirectoryCannotBeCreatedException;
-use PHPUnit\Runner\Exception;
-use PHPUnit\Util\Filesystem;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
@@ -89,7 +90,7 @@ final class DefaultResultCache implements ResultCache
      */
     private array $times = [];
 
-    public function __construct(string $filepath = null)
+    public function __construct(?string $filepath = null)
     {
         if ($filepath !== null && is_dir($filepath)) {
             $filepath .= DIRECTORY_SEPARATOR.self::DEFAULT_RESULT_CACHE_FILENAME;
@@ -127,13 +128,15 @@ final class DefaultResultCache implements ResultCache
 
     public function load(): void
     {
-        if (! is_file($this->cacheFilename)) {
+        $contents = @file_get_contents($this->cacheFilename);
+
+        if ($contents === false) {
             return;
         }
 
         $data = json_decode(
-            file_get_contents($this->cacheFilename),
-            true
+            $contents,
+            true,
         );
 
         if ($data === null) {

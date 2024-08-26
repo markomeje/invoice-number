@@ -27,6 +27,11 @@ final class TestCaseMethodFactory
     public ?string $describing = null;
 
     /**
+     * The test's number of repetitions.
+     */
+    public int $repetitions = 1;
+
+    /**
      * Determines if the test is a "todo".
      */
     public bool $todo = false;
@@ -68,7 +73,7 @@ final class TestCaseMethodFactory
         public ?Closure $closure,
     ) {
         $this->closure ??= function (): void {
-            Assert::getCount() > 0 ?: self::markTestIncomplete(); // @phpstan-ignore-line
+            (Assert::getCount() > 0 || $this->doesNotPerformAssertions()) ?: self::markTestIncomplete(); // @phpstan-ignore-line
         };
 
         $this->bootHigherOrderable();
@@ -133,14 +138,14 @@ final class TestCaseMethodFactory
         $attributes = [];
 
         foreach ($annotationsToUse as $annotation) {
-            $annotations = (new $annotation())->__invoke($this, $annotations);
+            $annotations = (new $annotation)->__invoke($this, $annotations);
         }
 
         foreach ($attributesToUse as $attribute) {
-            $attributes = (new $attribute())->__invoke($this, $attributes);
+            $attributes = (new $attribute)->__invoke($this, $attributes);
         }
 
-        if ($this->datasets !== []) {
+        if ($this->datasets !== [] || $this->repetitions > 1) {
             $dataProviderName = $methodName.'_dataset';
             $annotations[] = "@dataProvider $dataProviderName";
             $datasetsCode = $this->buildDatasetForEvaluation($methodName, $dataProviderName);
@@ -177,7 +182,13 @@ final class TestCaseMethodFactory
      */
     private function buildDatasetForEvaluation(string $methodName, string $dataProviderName): string
     {
-        DatasetsRepository::with($this->filename, $methodName, $this->datasets);
+        $datasets = $this->datasets;
+
+        if ($this->repetitions > 1) {
+            $datasets = [range(1, $this->repetitions), ...$datasets];
+        }
+
+        DatasetsRepository::with($this->filename, $methodName, $datasets);
 
         return <<<EOF
 

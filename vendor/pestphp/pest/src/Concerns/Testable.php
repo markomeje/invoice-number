@@ -63,6 +63,11 @@ trait Testable
     private static ?Closure $__afterAll = null;
 
     /**
+     * The list of snapshot changes, if any.
+     */
+    private array $__snapshotChanges = [];
+
+    /**
      * Resets the test case static properties.
      */
     public static function flush(): void
@@ -185,6 +190,28 @@ trait Testable
     {
         TestSuite::getInstance()->test = $this;
 
+        $method = TestSuite::getInstance()->tests->get(self::$__filename)->getMethod($this->name());
+
+        $description = $this->dataName() ? $method->description.' with '.$this->dataName() : $method->description;
+        $description = htmlspecialchars(html_entity_decode($description), ENT_NOQUOTES);
+
+        if ($method->repetitions > 1) {
+            $matches = [];
+            preg_match('/\((.*?)\)/', $description, $matches);
+
+            if (count($matches) > 1) {
+                if (str_contains($description, 'with '.$matches[0].' /')) {
+                    $description = str_replace('with '.$matches[0].' /', '', $description);
+                } else {
+                    $description = str_replace('with '.$matches[0], '', $description);
+                }
+            }
+
+            $description .= ' @ repetition '.($matches[1].' of '.$method->repetitions);
+        }
+
+        $this->__description = self::$__latestDescription = $description;
+
         parent::setUp();
 
         $beforeEach = TestSuite::getInstance()->beforeEach->get(self::$__filename)[1];
@@ -236,7 +263,9 @@ trait Testable
     {
         $method = TestSuite::getInstance()->tests->get(self::$__filename)->getMethod($this->name());
 
-        $this->__description = self::$__latestDescription = $this->dataName() ? $method->description.' with '.$this->dataName() : $method->description;
+        if ($method->repetitions > 1) {
+            array_shift($arguments);
+        }
 
         $underlyingTest = Reflection::getFunctionVariable($this->__test, 'closure');
         $testParameterTypes = array_values(Reflection::getFunctionArguments($underlyingTest));
@@ -261,7 +290,7 @@ trait Testable
             return $arguments;
         }
 
-        if (in_array($testParameterTypes[0], [Closure::class, 'callable'])) {
+        if (isset($testParameterTypes[0]) && in_array($testParameterTypes[0], [Closure::class, 'callable'])) {
             return $arguments;
         }
 
@@ -306,6 +335,24 @@ trait Testable
     private function __callClosure(Closure $closure, array $arguments): mixed
     {
         return ExceptionTrace::ensure(fn (): mixed => call_user_func_array(Closure::bind($closure, $this, $this::class), $arguments));
+    }
+
+    /** @postCondition */
+    protected function __MarkTestIncompleteIfSnapshotHaveChanged(): void
+    {
+        if (count($this->__snapshotChanges) === 0) {
+            return;
+        }
+
+        if (count($this->__snapshotChanges) === 1) {
+            $this->markTestIncomplete($this->__snapshotChanges[0]);
+
+            return;
+        }
+
+        $messages = implode(PHP_EOL, array_map(static fn (string $message): string => '- $message', $this->__snapshotChanges));
+
+        $this->markTestIncomplete($messages);
     }
 
     /**

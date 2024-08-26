@@ -5,31 +5,30 @@ declare(strict_types=1);
 namespace Pest\Repositories;
 
 use Pest\Exceptions\ShouldNotHappen;
-use Pest\Support\Str;
-use PHPUnit\Framework\TestCase;
+use Pest\TestSuite;
 
 /**
  * @internal
  */
 final class SnapshotRepository
 {
+    /** @var array<string, int> */
+    private static array $expectationsCounter = [];
+
     /**
      * Creates a snapshot repository instance.
      */
     public function __construct(
         readonly private string $testsPath,
         readonly private string $snapshotsPath,
-    ) {
-    }
+    ) {}
 
     /**
      * Checks if the snapshot exists.
      */
-    public function has(TestCase $testCase, string $description): bool
+    public function has(): bool
     {
-        [$filename, $description] = $this->getFilenameAndDescription($testCase);
-
-        return file_exists($this->getSnapshotFilename($filename, $description));
+        return file_exists($this->getSnapshotFilename());
     }
 
     /**
@@ -39,11 +38,9 @@ final class SnapshotRepository
      *
      * @throws ShouldNotHappen
      */
-    public function get(TestCase $testCase, string $description): array
+    public function get(): array
     {
-        [$filename, $description] = $this->getFilenameAndDescription($testCase);
-
-        $contents = file_get_contents($snapshotFilename = $this->getSnapshotFilename($filename, $description));
+        $contents = file_get_contents($snapshotFilename = $this->getSnapshotFilename());
 
         if ($contents === false) {
             throw ShouldNotHappen::fromMessage('Snapshot file could not be read.');
@@ -57,11 +54,9 @@ final class SnapshotRepository
     /**
      * Saves the given snapshot for the given test case.
      */
-    public function save(TestCase $testCase, string $snapshot): string
+    public function save(string $snapshot): string
     {
-        [$filename, $description] = $this->getFilenameAndDescription($testCase);
-
-        $snapshotFilename = $this->getSnapshotFilename($filename, $description);
+        $snapshotFilename = $this->getSnapshotFilename();
 
         if (! file_exists(dirname($snapshotFilename))) {
             mkdir(dirname($snapshotFilename), 0755, true);
@@ -104,32 +99,42 @@ final class SnapshotRepository
     }
 
     /**
-     * Gets the snapshot's "filename" and "description".
-     *
-     * @return array{0: string, 1: string}
-     */
-    private function getFilenameAndDescription(TestCase $testCase): array
-    {
-        $filename = (fn () => self::$__filename)->call($testCase, $testCase::class); // @phpstan-ignore-line
-
-        $description = str_replace('__pest_evaluable_', '', $testCase->name());
-        $datasetAsString = str_replace('__pest_evaluable_', '', Str::evaluable($testCase->dataSetAsStringWithData()));
-
-        $description = str_replace(' ', '_', $description.$datasetAsString);
-
-        return [$filename, $description];
-    }
-
-    /**
      * Gets the snapshot's "filename".
      */
-    private function getSnapshotFilename(string $filename, string $description): string
+    private function getSnapshotFilename(): string
     {
-        $relativePath = str_replace($this->testsPath, '', $filename);
+        $relativePath = str_replace($this->testsPath, '', TestSuite::getInstance()->getFilename());
 
         // remove extension from filename
         $relativePath = substr($relativePath, 0, (int) strrpos($relativePath, '.'));
 
+        $description = TestSuite::getInstance()->getDescription();
+
+        if ($this->getCurrentSnapshotCounter() > 1) {
+            $description .= '__'.$this->getCurrentSnapshotCounter();
+        }
+
         return sprintf('%s/%s.snap', $this->testsPath.'/'.$this->snapshotsPath.$relativePath, $description);
+    }
+
+    private function getCurrentSnapshotKey(): string
+    {
+        return TestSuite::getInstance()->getFilename().'###'.TestSuite::getInstance()->getDescription();
+    }
+
+    private function getCurrentSnapshotCounter(): int
+    {
+        return self::$expectationsCounter[$this->getCurrentSnapshotKey()] ?? 0;
+    }
+
+    public function startNewExpectation(): void
+    {
+        $key = $this->getCurrentSnapshotKey();
+
+        if (! isset(self::$expectationsCounter[$key])) {
+            self::$expectationsCounter[$key] = 0;
+        }
+
+        self::$expectationsCounter[$key]++;
     }
 }

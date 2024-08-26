@@ -10,6 +10,7 @@ use SebastianBergmann\CodeCoverage\Node\Directory;
 use SebastianBergmann\CodeCoverage\Node\File;
 use SebastianBergmann\Environment\Runtime;
 use Symfony\Component\Console\Output\OutputInterface;
+
 use function Termwind\render;
 use function Termwind\renderUsing;
 use function Termwind\terminal;
@@ -36,7 +37,7 @@ final class Coverage
      */
     public static function isAvailable(): bool
     {
-        $runtime = new Runtime();
+        $runtime = new Runtime;
 
         if (! $runtime->canCollectCodeCoverage()) {
             return false;
@@ -66,7 +67,7 @@ final class Coverage
      */
     public static function usingXdebug(): bool
     {
-        return (new Runtime())->hasXdebug();
+        return (new Runtime)->hasXdebug();
     }
 
     /**
